@@ -41,16 +41,18 @@ const FinalInputArea: FC<TInputAreaProps> = ({
 
   return (
     <form
-      className="mx-auto flex w-full items-center justify-between"
+      className="mx-auto flex w-full items-center justify-between p-4"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit();
       }}
     >
-      <div className="flex w-full rounded-lg border">
+      {/* Black background for the input section */}
+      <div className="relative w-full">
+        {/* Remove the glass effect and replace with solid black */}
         <textarea
-          placeholder="Follow up question"
-          className="block w-full resize-none rounded-l-lg border-r p-6 text-gray-900 placeholder:text-gray-400"
+          placeholder="Type your message..."
+          className="relative block w-full resize-none rounded-full p-3 text-white placeholder-gray-500 z-10 bg-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50"
           disabled={disabled}
           value={promptValue}
           onKeyDown={handleKeyDown}
@@ -59,10 +61,12 @@ const FinalInputArea: FC<TInputAreaProps> = ({
           rows={1}
         />
       </div>
+
+      {/* Submit button */}
       <button
         disabled={disabled}
         type="submit"
-        className="relative ml-3 flex size-[72px] shrink-0 items-center justify-center rounded-md bg-[linear-gradient(154deg,#2A8EF9_23.37%,#175CB6_91.91%)] disabled:pointer-events-none disabled:opacity-75"
+        className="relative ml-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl disabled:pointer-events-none disabled:opacity-75"
       >
         {disabled && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -73,7 +77,7 @@ const FinalInputArea: FC<TInputAreaProps> = ({
         <Image
           unoptimized
           src={"/up-arrow.svg"}
-          alt="search"
+          alt="submit"
           width={24}
           height={24}
           className={disabled ? "invisible" : ""}

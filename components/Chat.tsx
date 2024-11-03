@@ -28,7 +28,7 @@ export default function Chat({
   const [didScrollToBottom, setDidScrollToBottom] = useState(true);
 
   function scrollToBottom() {
-    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }
 
   useEffect(() => {
@@ -38,15 +38,14 @@ export default function Chat({
   }, [didScrollToBottom, messages]);
 
   useEffect(() => {
-    let el = scrollableContainerRef.current;
+    const el = scrollableContainerRef.current;
     if (!el) {
       return;
     }
 
     function handleScroll() {
       if (scrollableContainerRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } =
-          scrollableContainerRef.current;
+        const { scrollTop, scrollHeight, clientHeight } = scrollableContainerRef.current;
         setDidScrollToBottom(scrollTop + clientHeight >= scrollHeight);
       }
     }
@@ -59,56 +58,60 @@ export default function Chat({
   }, []);
 
   return (
-    <div className="flex grow flex-col gap-4 overflow-hidden">
-      <div className="flex grow flex-col overflow-hidden lg:p-4">
-        <p className="uppercase text-gray-900">
-          <b>Topic: </b>
-          {topic}
-        </p>
-        <div
-          ref={scrollableContainerRef}
-          className="mt-2 overflow-y-scroll rounded-lg border border-solid border-[#C2C2C2] bg-white px-5 lg:p-7"
-        >
-          {messages.length > 2 ? (
-            <div className="prose-sm max-w-5xl lg:prose lg:max-w-full">
-              {messages.slice(2).map((message, index) =>
-                message.role === "assistant" ? (
-                  <div className="relative w-full" key={index}>
-                    <Image
-                      src={simpleLogo}
-                      alt=""
-                      className="absolute left-0 top-0 !my-0 size-7"
-                    />
-                    <ReactMarkdown className="w-full pl-10">
+    <div className="flex flex-col h-full w-full max-w-7xl mx-auto"> {/* Increased the width */}
+      {/* Main chat container with the messages */}
+      <div className="flex grow flex-col gap-4 overflow-hidden bg-black rounded-lg shadow-lg p-4 w-full">
+        <div className="flex flex-col gap-2">
+          <p className="uppercase text-purple-400 text-lg font-semibold">
+            <b>Topic: </b>
+            {topic}
+          </p>
+          <div
+            ref={scrollableContainerRef}
+            className="mt-2 h-96 overflow-y-scroll rounded-lg bg-black p-4 shadow-inner w-full"
+          >
+            {messages.length > 2 ? (
+              <div className="prose-sm max-w-full lg:prose lg:max-w-full">
+                {messages.slice(2).map((message, index) =>
+                  message.role === "assistant" ? (
+                    <div className="relative w-full mb-4" key={index}>
+                      <Image
+                        src={simpleLogo}
+                        alt=""
+                        className="absolute left-0 top-0 !my-0 h-8"
+                      />
+                      <ReactMarkdown className="w-full pl-10 text-white">
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p
+                      key={index}
+                      className="ml-auto w-fit rounded-xl bg-blue-500 p-4 font-medium text-white shadow-md"
+                    >
                       {message.content}
-                    </ReactMarkdown>
-                  </div>
-                ) : (
-                  <p
-                    key={index}
-                    className="ml-auto w-fit rounded-xl bg-blue-500 p-4 font-medium text-white"
-                  >
-                    {message.content}
-                  </p>
-                ),
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          ) : (
-            <div className="flex w-full flex-col gap-4 py-5">
-              {Array.from(Array(10).keys()).map((i) => (
-                <div
-                  key={i}
-                  className={`${i < 5 && "hidden sm:block"} h-10 animate-pulse rounded-md bg-gray-300`}
-                  style={{ animationDelay: `${i * 0.05}s` }}
-                />
-              ))}
-            </div>
-          )}
+                    </p>
+                  ),
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            ) : (
+              <div className="flex w-full flex-col gap-4 py-5">
+                {Array.from(Array(10).keys()).map((i) => (
+                  <div
+                    key={i}
+                    className={`${i < 5 && "hidden sm:block"} h-10 animate-pulse rounded-md bg-gray-700 w-full`}
+                    style={{ animationDelay: `${i * 0.05}s` }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="bg-white lg:p-4">
+      {/* Input field container placed below the main container */}
+      <div className="mt-4 w-full"> {/* Full width for input field */}
         <FinalInputArea
           disabled={disabled}
           promptValue={promptValue}

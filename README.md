@@ -5,7 +5,7 @@
 
 ## Tech stack
 
-- Together AI for LLM inference
+- Together AI for inference
 - Next.js app router with Tailwind
 - Serper for the search API
 - Helicone for observability
