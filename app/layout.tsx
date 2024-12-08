@@ -4,6 +4,7 @@ import { Montserrat } from "next/font/google";
 import PlausibleProvider from "next-plausible";
 import "./globals.css";
 import Sidebar from "../components/Sidebar"; // Import the sidebar
+import { ThemeProvider } from "next-themes";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -43,18 +44,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <head>
-        <PlausibleProvider domain="llamatutor.together.ai" />
-      </head>
-      <body
-        className={`${montserrat.className} flex h-full flex-col justify-between text-gray-700 antialiased`}
-      >
-        {/* Main Layout with Sidebar */}
-        <div className="flex h-full">
-          <Sidebar />  {/* Sidebar is included here */}
-          <main className="flex-grow ml-16 p-6 no-scrollbar">{children}</main>
-        </div>
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+        <ThemeProvider attribute="class">
+          <PlausibleProvider domain="llamatutor.together.ai" />
+          <div className="flex h-full">
+            <Sidebar />  {/* Sidebar is included here */}
+            <main className="flex-grow ml-16 p-6 no-scrollbar">{children}</main>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

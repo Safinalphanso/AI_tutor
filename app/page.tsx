@@ -10,6 +10,8 @@ import {
 import { getSystemPrompt } from "@/utils/utils";
 import Chat from "@/components/Chat";
 import Sidebar from "@/components/Sidebar";
+import Video from '@/components/Video';
+import { NotesProvider } from '@/contexts/NotesContext';
 
 export default function Home() {
   const [inputValue, setInputValue] = useState("");
@@ -128,8 +130,16 @@ export default function Home() {
   }
 
   return (
-    <>
-      <Sidebar />
+    <NotesProvider>
+      <Sidebar 
+        setMessages={setMessages}
+        setSources={setSources}
+        setShowResult={setShowResult}
+        setTopic={setTopic}
+        setInputValue={setInputValue}
+        setIsLoadingSources={setIsLoadingSources}
+        setLoading={setLoading}
+      />
 
       <main
         className={`flex grow flex-col px-4 pb-4 ${showResult ? "overflow-hidden" : ""}`}
@@ -147,7 +157,14 @@ export default function Home() {
                   handleChat={handleChat}
                   topic={topic}
                 />
-                <Sources sources={sources} isLoading={isLoadingSources} />
+                <div className="lg:col-span-1 space-y-6">
+                  <div className="h-[calc(105vh-3rem)] overflow-hidden rounded-2xl">
+                    <Sources 
+                      sources={sources} 
+                      isLoading={isLoadingSources} 
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -163,6 +180,6 @@ export default function Home() {
         )}
       </main>
       {/* <Footer /> */}
-    </>
+    </NotesProvider>
   );
 }

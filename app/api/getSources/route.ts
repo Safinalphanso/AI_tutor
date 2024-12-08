@@ -5,80 +5,104 @@ let excludedSites = ["youtube.com"];
 let searchEngine: "bing" | "serper" = "serper";
 
 export async function POST(request: Request) {
-  let { question } = await request.json();
+  try {
+    let { question } = await request.json();
 
-  const finalQuestion = `what is ${question}`;
-
-  if (searchEngine === "bing") {
-    const BING_API_KEY = process.env["BING_API_KEY"];
-    if (!BING_API_KEY) {
-      throw new Error("BING_API_KEY is required");
+    if (!question) {
+      return NextResponse.json({ error: "Question is required" }, { status: 400 });
     }
 
-    const params = new URLSearchParams({
-      q: `${finalQuestion} ${excludedSites.map((site) => `-site:${site}`).join(" ")}`,
-      mkt: "en-US",
-      count: "6",
-      safeSearch: "Strict",
-    });
+    const finalQuestion = `what is ${question}`;
 
-    const response = await fetch(
-      `https://api.bing.microsoft.com/v7.0/search?${params}`,
-      {
-        method: "GET",
-        headers: {
-          "Ocp-Apim-Subscription-Key": BING_API_KEY,
+    if (searchEngine === "bing") {
+      const BING_API_KEY = process.env["BING_API_KEY"];
+      if (!BING_API_KEY) {
+        return NextResponse.json({ error: "BING_API_KEY is required" }, { status: 500 });
+      }
+
+      const params = new URLSearchParams({
+        q: `${finalQuestion} ${excludedSites.map((site) => `-site:${site}`).join(" ")}`,
+        mkt: "en-US",
+        count: "6",
+        safeSearch: "Strict",
+      });
+
+      const response = await fetch(
+        `https://api.bing.microsoft.com/v7.0/search?${params}`,
+        {
+          method: "GET",
+          headers: {
+            "Ocp-Apim-Subscription-Key": BING_API_KEY,
+          },
         },
-      },
-    );
+      );
 
-    const BingJSONSchema = z.object({
-      webPages: z.object({
-        value: z.array(z.object({ name: z.string(), url: z.string() })),
-      }),
-    });
+      if (!response.ok) {
+        return NextResponse.json({ error: "Bing API request failed" }, { status: response.status });
+      }
 
-    const rawJSON = await response.json();
-    const data = BingJSONSchema.parse(rawJSON);
+      const BingJSONSchema = z.object({
+        webPages: z.object({
+          value: z.array(z.object({ name: z.string(), url: z.string() })),
+        }),
+      });
 
-    let results = data.webPages.value.map((result) => ({
-      name: result.name,
-      url: result.url,
-    }));
+      const rawJSON = await response.json();
+      
+      try {
+        const data = BingJSONSchema.parse(rawJSON);
+        let results = data.webPages.value.map((result) => ({
+          name: result.name,
+          url: result.url,
+        }));
+        return NextResponse.json(results);
+      } catch (error) {
+        return NextResponse.json({ error: "Invalid response format from Bing API" }, { status: 500 });
+      }
 
-    return NextResponse.json(results);
-    // TODO: Figure out a way to remove certain results like YT
-  } else if (searchEngine === "serper") {
-    const SERPER_API_KEY = process.env["SERPER_API_KEY"];
-    if (!SERPER_API_KEY) {
-      throw new Error("SERPER_API_KEY is required");
+    } else if (searchEngine === "serper") {
+      const SERPER_API_KEY = process.env["SERPER_API_KEY"];
+      if (!SERPER_API_KEY) {
+        return NextResponse.json({ error: "SERPER_API_KEY is required" }, { status: 500 });
+      }
+
+      const response = await fetch("https://google.serper.dev/search", {
+        method: "POST",
+        headers: {
+          "X-API-KEY": SERPER_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          q: finalQuestion,
+          num: 9,
+        }),
+      });
+
+      if (!response.ok) {
+        return NextResponse.json({ error: "Serper API request failed" }, { status: response.status });
+      }
+
+      const rawJSON = await response.json();
+
+      const SerperJSONSchema = z.object({
+        organic: z.array(z.object({ title: z.string(), link: z.string() })),
+      });
+
+      try {
+        const data = SerperJSONSchema.parse(rawJSON);
+        let results = data.organic.map((result) => ({
+          name: result.title,
+          url: result.link,
+        }));
+        return NextResponse.json(results);
+      } catch (error) {
+        return NextResponse.json({ error: "Invalid response format from Serper API" }, { status: 500 });
+      }
     }
 
-    const response = await fetch("https://google.serper.dev/search", {
-      method: "POST",
-      headers: {
-        "X-API-KEY": SERPER_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        q: finalQuestion,
-        num: 9,
-      }),
-    });
+    return NextResponse.json({ error: "Invalid search engine specified" }, { status: 400 });
 
-    const rawJSON = await response.json();
-
-    const SerperJSONSchema = z.object({
-      organic: z.array(z.object({ title: z.string(), link: z.string() })),
-    });
-
-    const data = SerperJSONSchema.parse(rawJSON);
-
-    let results = data.organic.map((result) => ({
-      name: result.title,
-      url: result.link,
-    }));
-
-    return NextResponse.json(results);
+  } catch (error) {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

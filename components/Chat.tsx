@@ -3,6 +3,9 @@ import FinalInputArea from "./FinalInputArea";
 import { useEffect, useRef, useState } from "react";
 import simpleLogo from "../public/simple-logo.png";
 import Image from "next/image";
+import { FaUser } from "react-icons/fa";
+import { HiPlus } from 'react-icons/hi';
+import { useNotes } from '@/contexts/NotesContext';
 
 export default function Chat({
   messages,
@@ -26,6 +29,7 @@ export default function Chat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollableContainerRef = useRef<HTMLDivElement>(null);
   const [didScrollToBottom, setDidScrollToBottom] = useState(true);
+  const { addNote } = useNotes();
 
   function scrollToBottom() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -68,29 +72,47 @@ export default function Chat({
           </p>
           <div
             ref={scrollableContainerRef}
-            className="mt-2 h-96 overflow-y-scroll rounded-lg bg-black p-4 shadow-inner w-full"
+            className="mt-2 h-[calc(100vh-15rem)] overflow-y-auto custom-scrollbar rounded-lg bg-black p-4 shadow-inner"
           >
             {messages.length > 2 ? (
-              <div className="prose-sm max-w-full lg:prose lg:max-w-full">
+              <div className="prose-sm max-w-full lg:prose lg:max-w-full space-y-6">
                 {messages.slice(2).map((message, index) =>
                   message.role === "assistant" ? (
-                    <div className="relative w-full mb-4" key={index}>
-                      <Image
-                        src={simpleLogo}
-                        alt=""
-                        className="absolute left-0 top-0 !my-0 h-8"
-                      />
-                      <ReactMarkdown className="w-full pl-10 text-white">
-                        {message.content}
-                      </ReactMarkdown>
+                    <div key={index} className="flex items-start space-x-6 mb-6">
+                      <div className="flex-shrink-0 w-10 h-10 p-1">
+                        <Image
+                          src={simpleLogo}
+                          alt="AI"
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                      </div>
+                      <div className="flex-grow bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg relative group">
+                        <ReactMarkdown className="text-white prose prose-invert max-w-none">
+                          {message.content}
+                        </ReactMarkdown>
+                        {message.role === "assistant" && (
+                          <button
+                            onClick={() => addNote(message.content)}
+                            className="absolute top-2 right-2 p-2 text-gray-400 hover:text-purple-500 transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <HiPlus className="w-5 h-5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ) : (
-                    <p
-                      key={index}
-                      className="ml-auto w-fit rounded-xl bg-blue-500 p-4 font-medium text-white shadow-md"
-                    >
-                      {message.content}
-                    </p>
+                    <div key={index} className="flex items-start space-x-11 mb-6 flex-row-reverse pr-4">
+                      <div className="flex-shrink-0 w-10 h-10 ml-2">
+                        <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center p-2">
+                          <FaUser className="text-white w-5 h-5" />
+                        </div>
+                      </div>
+                      <div className="bg-purple-600 rounded-2xl p-4 shadow-lg text-white max-w-[80%]">
+                        {message.content}
+                      </div>
+                    </div>
                   ),
                 )}
                 <div ref={messagesEndRef} />
@@ -100,7 +122,9 @@ export default function Chat({
                 {Array.from(Array(10).keys()).map((i) => (
                   <div
                     key={i}
-                    className={`${i < 5 && "hidden sm:block"} h-10 animate-pulse rounded-md bg-gray-700 w-full`}
+                    className={`${
+                      i < 5 && "hidden sm:block"
+                    } h-10 animate-pulse rounded-md bg-gray-700 w-full`}
                     style={{ animationDelay: `${i * 0.05}s` }}
                   />
                 ))}

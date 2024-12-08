@@ -1,6 +1,5 @@
 import { FC, KeyboardEvent } from "react";
-import TypeAnimation from "./TypeAnimation";
-import Image from "next/image";
+import { HiPaperAirplane } from "react-icons/hi";
 
 type TInputAreaProps = {
   promptValue: string;
@@ -47,42 +46,23 @@ const FinalInputArea: FC<TInputAreaProps> = ({
         onSubmit();
       }}
     >
-      {/* Black background for the input section */}
-      <div className="relative w-full">
-        {/* Remove the glass effect and replace with solid black */}
-        <textarea
-          placeholder="Type your message..."
-          className="relative block w-full resize-none rounded-full p-3 text-white placeholder-gray-500 z-10 bg-black focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50"
-          disabled={disabled}
+      <div className="input-area flex w-full items-center gap-4 px-6">
+        <input
+          type="text"
+          className="input-field flex-1"
           value={promptValue}
-          onKeyDown={handleKeyDown}
-          required
           onChange={(e) => setPromptValue(e.target.value)}
-          rows={1}
+          placeholder="Type your message..."
+          disabled={disabled}
         />
+        <button 
+          type="submit"
+          className="primary-button !p-2 rounded-full aspect-square flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={disabled || !promptValue.trim()}
+        >
+          <HiPaperAirplane className="h-5 w-5 rotate-90" />
+        </button>
       </div>
-
-      {/* Submit button */}
-      <button
-        disabled={disabled}
-        type="submit"
-        className="relative ml-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl disabled:pointer-events-none disabled:opacity-75"
-      >
-        {disabled && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <TypeAnimation />
-          </div>
-        )}
-
-        <Image
-          unoptimized
-          src={"/up-arrow.svg"}
-          alt="submit"
-          width={24}
-          height={24}
-          className={disabled ? "invisible" : ""}
-        />
-      </button>
     </form>
   );
 };

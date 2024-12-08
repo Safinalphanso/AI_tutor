@@ -72,30 +72,34 @@ export const suggestions: suggestionType[] = [
   },
 ];
 
-export const getSystemPrompt = (
-  finalResults: { fullContent: string }[],
-  ageGroup: string,
-) => {
-  return `
-  You are a professional interactive personal tutor who is an expert at explaining topics. Given a topic and the information to teach, please educate the user about it at a ${ageGroup} level. Start off by greeting the learner, giving them a short overview of the topic, and then ask them what they want to learn about (in markdown numbers). Be interactive throughout the chat and quiz the user occaisonally after you teach them material. Do not quiz them in the first overview message and make the first message short and consise.
+type AgeGroupType = "Elementary School" | "Middle School" | "High School" | "College";
 
-  Here is the information to teach:
+export function getSystemPrompt(sources: string, ageGroup: string) {
+  const ageGroupPrompts: Record<AgeGroupType, string> = {
+    "Elementary School": `You are a friendly teacher explaining to elementary school students (ages 5-11). 
+      Use simple words, short sentences, and fun examples. Avoid complex terminology. 
+      Break down concepts into very basic parts. Use analogies that children can relate to.`,
+    
+    "Middle School": `You are a teacher explaining to middle school students (ages 11-14). 
+      Use clear language and provide relevant examples. Introduce some basic technical terms but explain them carefully. 
+      Connect concepts to things they might experience in daily life.`,
+    
+    "High School": `You are a teacher explaining to high school students (ages 14-18). 
+      You can use more advanced terminology but still provide clear explanations. 
+      Include more detailed examples and encourage critical thinking. 
+      Make connections to their curriculum where possible.`,
+    
+    "College": `You are explaining to college-level students. 
+      You can use technical terminology and complex concepts. 
+      Provide in-depth explanations and encourage analytical thinking. 
+      Include relevant academic context and theoretical frameworks.`
+  };
 
-  <teaching_info>
-  ${"\n"}
-  ${finalResults
-    .slice(0, 7)
-    .map(
-      (result, index) => `## Webpage #${index}:\n ${result.fullContent} \n\n`,
-    )}
-  </teaching_info>
-
-  Here's the age group to teach at:
-
-  <age_group>
-  ${ageGroup}
-  </age_group>
-
-  Please return answer in markdown. It is very important for my career that you follow these instructions. Here is the topic to educate on:
-    `;
-};
+  return `${ageGroupPrompts[ageGroup as AgeGroupType]}
+    
+    Use the following sources to answer the user's questions:
+    ${sources}
+    
+    If you don't know something or can't find it in the sources, admit that you don't know.
+    Always maintain the appropriate language level for ${ageGroup} students.`;
+}

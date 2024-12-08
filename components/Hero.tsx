@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { FC } from "react";
+import { FC, useState, useEffect } from "react";
 import InitialInputArea from "./InitialInputArea";
 import { suggestions } from "@/utils/utils";
 
@@ -20,6 +20,23 @@ const Hero: FC<THeroProps> = ({
   setAgeGroup,
   handleInitialChat,
 }) => {
+  const [showGif, setShowGif] = useState(false);
+
+  useEffect(() => {
+    const isReload = sessionStorage.getItem("pageReloaded") === null;
+    if (isReload) {
+      sessionStorage.setItem("pageReloaded", "true");
+      setShowGif(true);
+      setTimeout(() => setShowGif(false), 5000);
+    }
+  }, []);
+
+  const handleInitialChatWrapper = () => {
+    handleInitialChat();
+    setShowGif(true);
+    setTimeout(() => setShowGif(false), 5000);
+  };
+
   const handleClickSuggestion = (value: string) => {
     setPromptValue(value);
   };
@@ -28,7 +45,7 @@ const Hero: FC<THeroProps> = ({
     <div className="flex-grow p-6">
       <div className="mx-auto mt-10 flex max-w-3xl flex-col items-center justify-center">
         <a
-          className="mb-4 inline-flex h-7 shrink-0 items-center gap-[9px] rounded-full border  bg-white/40 backdrop-blur-md px-5 py-4 shadow-lg"
+          className="mb-4 inline-flex h-7 shrink-0 items-center gap-[9px] rounded-full border bg-white/40 backdrop-blur-md px-5 py-4 shadow-lg"
           href="https://www.together.ai/"
           target="_blank"
           rel="noopener noreferrer"
@@ -58,10 +75,21 @@ const Hero: FC<THeroProps> = ({
           you!
         </p>
 
+        <div className="mt-6 flex items-center justify-center w-40 h-40 bg-gray-800 rounded-full overflow-hidden shadow-md">
+          <video
+            src="/tutor.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        </div>
+
         <div className="mt-4 w-full pb-6">
           <InitialInputArea
             promptValue={promptValue}
-            handleInitialChat={handleInitialChat}
+            handleInitialChat={handleInitialChatWrapper}
             setPromptValue={setPromptValue}
             handleChat={handleChat}
             ageGroup={ageGroup}
@@ -94,7 +122,7 @@ const Hero: FC<THeroProps> = ({
           Fully open source!{" "}
           <span className="text-sm font-medium underline">
             <a
-              href="https://github.com/Nutlope/llamatutor"
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
             >
